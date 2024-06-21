@@ -1,0 +1,10 @@
+import cv2
+image = cv2.imread(r"C:\Users\DINESH\OneDrive\Pictures\Camera imports\2024-02-01\8c5007ff-8561-4a85-a0b2-1262be79f7db.png")
+if image is None:
+    print("Error: Could not read image.")
+    exit()
+gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+cv2.imshow('Original Image', image)
+cv2.imshow('Gray-scale Image', gray_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
