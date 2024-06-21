@@ -1,0 +1,64 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Function to build Gabor filters
+def build_gabor_filters():
+    filters = []
+    ksize = 21  # Size of the filter
+    for theta in np.arange(0, np.pi, np.pi / 8):  # Varying theta from 0 to 180 degrees
+        for sigma in (1, 3):
+            for lamda in np.arange(np.pi / 4, np.pi, np.pi / 4):  # Varying lambda
+                for gamma in (0.5, 0.75):
+                    kern = cv2.getGaborKernel((ksize, ksize), sigma, theta, lamda, gamma, 0, ktype=cv2.CV_32F)
+                    kern /= 1.5 * kern.sum()
+                    filters.append(kern)
+    return filters
+
+# Function to apply Gabor filters to the image
+def apply_gabor_filters(img, filters):
+    new_img = np.zeros_like(img)
+    for kern in filters:
+        fimg = cv2.filter2D(img, cv2.CV_8UC3, kern)
+        np.maximum(new_img, fimg, new_img)
+    return new_img
+
+# Function for texture segmentation using k-means clustering
+def texture_segmentation(img):
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    filters = build_gabor_filters()
+    gabor_img = apply_gabor_filters(img_gray, filters)
+
+    # Reshape the image for k-means clustering
+    reshaped_img = gabor_img.reshape(-1, 1)
+
+    # Apply k-means clustering
+    k = 3  # Number of clusters
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
+    _, labels, centers = cv2.kmeans(reshaped_img.astype(np.float32), k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+    segmented_img = labels.reshape(img_gray.shape)
+
+    return segmented_img
+
+# Load the image
+image_path = r"C:/Users/DINESH/Pictures/Screenshots/Screenshot 2024-06-21 125800.png" 
+image = cv2.imread(image_path)
+
+# Check if the image was loaded successfully
+if image is None:
+    print(f"Error: Could not read image from path {image_path}.")
+    exit()
+
+# Perform texture segmentation
+segmented_image = texture_segmentation(image)
+
+# Display the results
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.title('Original Image')
+plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+plt.subplot(1, 2, 2)
+plt.title('Segmented Image')
+plt.imshow(segmented_image, cmap='gray')
+plt.show()
+
