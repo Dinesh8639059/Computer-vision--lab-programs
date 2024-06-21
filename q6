@@ -1,0 +1,63 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load left and right images
+left_image_path = r"C:\Users\DINESH\Pictures\Screenshots\Screenshot 2024-06-21 125800.png"
+right_image_path = r"C:\Users\DINESH\Pictures\Screenshots\Screenshot 2024-04-17 081309.png"
+
+left_image = cv2.imread(left_image_path, cv2.IMREAD_GRAYSCALE)
+right_image = cv2.imread(right_image_path, cv2.IMREAD_GRAYSCALE)
+
+# Check if the images were loaded successfully
+if left_image is None or right_image is None:
+    print("Error: Could not load images.")
+    exit()
+
+# Resize the right image to match the left image size
+right_image = cv2.resize(right_image, (left_image.shape[1], left_image.shape[0]))
+
+# Stereo Block Matching (BM)
+def stereo_block_matching(left_image, right_image):
+    stereo_bm = cv2.StereoBM_create(numDisparities=16, blockSize=15)
+    disparity_bm = stereo_bm.compute(left_image, right_image)
+    disparity_bm = cv2.normalize(disparity_bm, disparity_bm, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
+    disparity_bm = np.uint8(disparity_bm)
+    return disparity_bm
+
+# Stereo Semi-Global Matching (SGM)
+def stereo_semi_global_matching(left_image, right_image):
+    stereo_sgm = cv2.StereoSGBM_create(
+        minDisparity=0,
+        numDisparities=16,
+        blockSize=3,
+        P1=8 * 3 * 3**2,
+        P2=32 * 3 * 3**2,
+        disp12MaxDiff=1,
+        uniquenessRatio=15,
+        speckleWindowSize=100,
+        speckleRange=32
+    )
+    disparity_sgm = stereo_sgm.compute(left_image, right_image).astype(np.float32) / 16.0
+    disparity_sgm = cv2.normalize(disparity_sgm, disparity_sgm, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
+    disparity_sgm = np.uint8(disparity_sgm)
+    return disparity_sgm
+
+# Perform stereo block matching
+disparity_bm = stereo_block_matching(left_image, right_image)
+
+# Perform stereo semi-global matching
+disparity_sgm = stereo_semi_global_matching(left_image, right_image)
+
+# Display results
+plt.figure(figsize=(20, 10))
+
+plt.subplot(1, 2, 1)
+plt.title('Disparity Map - Block Matching (BM)')
+plt.imshow(disparity_bm, cmap='gray')
+
+plt.subplot(1, 2, 2)
+plt.title('Disparity Map - Semi-Global Matching (SGM)')
+plt.imshow(disparity_sgm, cmap='gray')
+
+plt.show()
