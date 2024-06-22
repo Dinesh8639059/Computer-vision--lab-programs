@@ -1,0 +1,36 @@
+import cv2
+import numpy as np
+
+def translate_image(image, dx, dy):
+    # Define the translation matrix
+    M = np.float32([[1, 0, dx], [0, 1, dy]])
+    
+    # Apply the translation
+    translated_image = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]))
+    
+    return translated_image
+
+# Example usage
+if __name__ == "__main__":
+    # Read the image
+    image_path = r"C:\Users\DINESH\Pictures\Screenshots\Screenshot 2024-06-21 125800.png"
+    image = cv2.imread(image_path)
+    
+    # Check if the image was successfully loaded
+    if image is not None:
+        # Define the amount of translation (dx, dy)
+        dx = 50  # shift by 50 pixels horizontally
+        dy = 30  # shift by 30 pixels vertically
+        
+        # Translate the image
+        translated_image = translate_image(image, dx, dy)
+        
+        # Display original and translated images
+        cv2.imshow('Original Image', image)
+        cv2.imshow('Translated Image', translated_image)
+        
+        # Wait for a key press and close windows
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    else:
+        print("Error: Image not found.")
