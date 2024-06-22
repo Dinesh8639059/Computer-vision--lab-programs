@@ -1,0 +1,42 @@
+import cv2
+
+# Global variable to store the image
+image = None
+
+# Mouse callback function to display coordinates
+def show_coordinates(event, x, y, flags, param):
+    global image  # Ensure we are using the global image variable
+    if event == cv2.EVENT_LBUTTONDOWN:  # Check if the left mouse button was clicked
+        print(f"Clicked coordinates: ({x}, {y})")
+        # Draw a circle at the clicked point
+        cv2.circle(image, (x, y), 5, (0, 255, 0), -1)
+        # Display the coordinates on the image
+        cv2.putText(image, f"({x}, {y})", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
+        # Display the image with modifications
+        cv2.imshow('Image', image)
+
+# Function to set up the image window and mouse callback
+def display_image_with_coordinates(image_path):
+    global image  # Declare image as a global variable
+    # Read the image
+    image = cv2.imread(image_path)
+    
+    # Check if the image was loaded successfully
+    if image is None:
+        print(f"Error: Unable to load image at {image_path}")
+        return
+
+    # Create a window and display the image
+    cv2.imshow('Image', image)
+    
+    # Set the mouse callback function for the window
+    cv2.setMouseCallback('Image', show_coordinates)
+    
+    # Wait until a key is pressed, then close the window
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+# Example usage
+if __name__ == "__main__":
+    image_path = r"C:\Users\DINESH\Pictures\Screenshots\Screenshot 2024-06-21 125800.png"
+    display_image_with_coordinates(image_path)
